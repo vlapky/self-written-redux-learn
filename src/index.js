@@ -1,9 +1,9 @@
 //import { createStore } from './createStore'
-import { applyMiddleware, createStore } from 'redux'
+import { applyMiddleware, createStore, compose } from 'redux'
 import thunk from 'redux-thunk'
 import logger from 'redux-logger';
 import { rootReducer } from './redux/rootReducer'
-import { increment, decrement, changeTheme } from './redux/actions';
+import { increment, decrement, changeTheme, asyncIncr } from './redux/actions';
 import './styles.css'
 
 const counter = document.getElementById('counter')
@@ -12,43 +12,38 @@ const del = document.getElementById('sub')
 const async = document.getElementById('async')
 const theme = document.getElementById('theme')
 
-//middleware
-// function logger(state) {
-//     return function(next){
-//         return function(action) {
-//             console.log('prev state', state.getState())
-//             console.log('action', action)
-//             const newState = next(action)
-//             console.log('new state', newState)
-//             return newState
-//         }
-//     }
-// }
+const store = createStore(
+    rootReducer,
+    compose(
+        applyMiddleware(thunk, logger),
+        window.__REDUX_DEVTOOLS_EXTENSION__ && window.__REDUX_DEVTOOLS_EXTENSION__()
+    )
+)
 
-const store = createStore(rootReducer, applyMiddleware(thunk, logger))
-
-add.addEventListener('click', ()=>{
+add.addEventListener('click', () => {
     store.dispatch(increment())
 })
 
-del.addEventListener('click', ()=>{
+del.addEventListener('click', () => {
     store.dispatch(decrement())
 })
 
-async.addEventListener('click', ()=>{
-    setTimeout(()=>{
-        store.dispatch(increment())
-    }, 2000)
+async.addEventListener('click', () => {
+    store.dispatch(asyncIncr())
 })
 
-theme.addEventListener('click', ()=>{
+theme.addEventListener('click', () => {
     store.dispatch(changeTheme())
 })
 
-store.subscribe( ()=> {
+store.subscribe(() => {
     const state = store.getState()
     counter.textContent = state.counter
-    document.body.className = state.theme.value
+    document.body.className = state.theme.value;
+
+    [add, del, theme, async].forEach((btn) => {
+        btn.disabled = state.theme.disabled
+    })
 })
 
-store.dispatch({type:'INIT'})
+store.dispatch({ type: 'INIT' })

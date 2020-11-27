@@ -1,5 +1,5 @@
 import { combineReducers } from 'redux';
-import { INCREMENT, DECREMENT, CHANGE_THEME } from './types';
+import { INCREMENT, DECREMENT, CHANGE_THEME, DISABLE_BTN, ENABLE_BTN } from './types';
 
 function counterReducer(state = 0, action) {
     if (action.type === INCREMENT) {
@@ -11,7 +11,8 @@ function counterReducer(state = 0, action) {
 }
 
 const initialThemeState = {
-    value: 'light'
+    value: 'light',
+    disabled: false
 }
 
 function themeReducer(state = initialThemeState, action) {
@@ -19,12 +20,15 @@ function themeReducer(state = initialThemeState, action) {
         case CHANGE_THEME:
             const reverseTheme = state.value === 'light' ? 'dark' : 'light'
             return { ...state, value: reverseTheme }
-            
+        case ENABLE_BTN:
+            return { ...state, disabled: false }
+        case DISABLE_BTN:
+            return { ...state, disabled: true }
         default: return state
     }
 }
 
 export const rootReducer = combineReducers({
     counter: counterReducer,
-    theme: themeReducer
+    theme: themeReducer,
 })
