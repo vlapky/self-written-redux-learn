@@ -1,7 +1,9 @@
 //import { createStore } from './createStore'
-import { createStore } from 'redux'
+import { applyMiddleware, createStore } from 'redux'
+import thunk from 'redux-thunk'
+import logger from 'redux-logger';
 import { rootReducer } from './redux/rootReducer'
-import { increment, decrement } from './redux/actions';
+import { increment, decrement, changeTheme } from './redux/actions';
 import './styles.css'
 
 const counter = document.getElementById('counter')
@@ -10,7 +12,20 @@ const del = document.getElementById('sub')
 const async = document.getElementById('async')
 const theme = document.getElementById('theme')
 
-const store = createStore(rootReducer, 0)
+//middleware
+// function logger(state) {
+//     return function(next){
+//         return function(action) {
+//             console.log('prev state', state.getState())
+//             console.log('action', action)
+//             const newState = next(action)
+//             console.log('new state', newState)
+//             return newState
+//         }
+//     }
+// }
+
+const store = createStore(rootReducer, applyMiddleware(thunk, logger))
 
 add.addEventListener('click', ()=>{
     store.dispatch(increment())
@@ -27,12 +42,13 @@ async.addEventListener('click', ()=>{
 })
 
 theme.addEventListener('click', ()=>{
-
+    store.dispatch(changeTheme())
 })
 
 store.subscribe( ()=> {
     const state = store.getState()
-    counter.textContent = state
+    counter.textContent = state.counter
+    document.body.className = state.theme.value
 })
 
 store.dispatch({type:'INIT'})
